@@ -64,7 +64,10 @@ func TestReceive(t *testing.T) {
 		t.Error(err)
 	}
 
-	call := ProcessMessage(conn, conn, tempDir)
+	call, err := ProcessMessage(conn, tempDir)
+	if err != nil {
+		t.Error(err)
+	}
 
 	duration, _ := time.ParseDuration("180s")
 	referenceCall := &Call{
