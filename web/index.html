@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Anrufbeantworter</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+    <!-- Le styles -->
+    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="http://current.bootstrapcdn.com/bootstrap-v204/css/bootstrap-combined.min.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+      
+      .sidebar-nav {
+        padding: 9px 0;
+      }
+    </style>
+    </style>
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+
+    <!-- Add xpath support to IE. Domina needs this -->
+    <!--[if IE]>
+        <script type="text/javascript" src="js/xpath.js"></script>
+        <![endif]-->
+
+  </head>
+
+  <body>
+    <div class="navbar navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container-fluid">
+      <a class="brand" href="/">Anrufbeantworter</a>
+
+      <ul id="navigation" class="nav"></ul>
+      <ul class="nav pull-right">
+        <li style="display: none;" bind="visible: telefon.model.player_is_playing">
+          <!-- <h3>Anruf
+          von <span bind="text:telefon.model.player_call_text"></span></h3>
+          -->
+          <audio id="player"
+                 autoplay="autoplay" type="type/mpeg"
+                 controls="controls"
+                 bind="src:telefon.model.player_playing_url" src="/">
+          </audio>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+</div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span9">
+          <div id="content">
+
+            <table class="table">
+  <thead>
+    <tr>
+      <th>Anrufer</th>
+      <th>Dauer</th>
+      <th>Datum</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr bindseq="telefon.model.calls">
+      <td data-name="caller" bind="text: telefon.model.caller_text"></td>
+      <td data-name="duration" width="5em" bind="text: telefon.model.duration_text"></td>
+      <td data-name="date" bind="text: telefon.model.date_text"></td>
+      <td data-name="play" style="text-align: right;">
+        <a class="btn btn-success"
+           bind="click: telefon.controller.play_clicked; href: telefon.model.audio_href">
+          <i class="icon-play"></i>
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<ul class="pager">
+  <li class="previous">
+    <a href="#" bind="click:telefon.controller.older_clicked">&larr; Ältere</a>
+  </li>
+  <li class="next">
+    <a href="#" bind="click:telefon.controller.newer_clicked">Neuere &rarr;</a>
+  </li>
+</ul>
+
+            
+          </div>
+        </div>
+        <div class="span3">
+          <div id="sidebar">
+            
+          </div>
+        </div>
+
+      <div id="options"></div>
+      <footer></footer>
+
+    </div> <!-- /container -->
+      
+    <script type="text/javascript"
+    src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+ 
+</script>
+</body>
+</html>
