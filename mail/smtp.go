@@ -129,8 +129,8 @@ func extractCall(msg string) (*Call, error) {
 		return nil, err
 	}
 
-	date, err := time.Parse("2.01.06 15:04",
-		strings.TrimSpace(strings.Split(split[3][1:], "<")[0]+" "+split[4][1:6]))
+	date, err := time.Parse("2.01.06 15:04 -0700",
+		strings.TrimSpace(strings.Split(split[3][1:], "<")[0]+" "+split[4][1:6]) + " +0200")
 	if err != nil {
 		return nil, err
 	}
@@ -277,7 +277,7 @@ func ProcessMessage(conn net.Conn, storageDir string) (*Call, error) {
 		return nil, err
 	}
 
-	call.VoicemailPath = voicemailPath[len(storageDir):]
+	call.VoicemailPath = path.Base(voicemailPath)
 	log.Print("Voicemail saved to ", call.VoicemailPath)
 
 	return call, nil
