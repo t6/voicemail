@@ -43,6 +43,9 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
+		if call.Caller == "" { call.Caller = "Unbekannt" }
+		if call.Called == "" { call.Called = "Unbekannt" }
+		
 		call.VoicemailPath = path.Join("/voicemail", voicemailPath)
 		call.Duration, _ = time.ParseDuration(duration + "s")
 		calls = append(calls, call)
