@@ -21,16 +21,8 @@ import (
 	sqlite "github.com/gwenn/gosqlite"
 	"github.com/sloonz/go-qprintable"
 
-	"voicemail/utils"
+	. "voicemail/utils"
 )
-
-type Call struct {
-	caller        string
-	called        string
-	date          time.Time
-	duration      time.Duration
-	voicemailPath string
-}
 
 func handleData(rd bufio.Reader, out io.Writer) string {
 	// Stolen from go-smtpd:
@@ -144,10 +136,10 @@ func extractCall(msg string) (*Call, error) {
 	}
 
 	return &Call{
-		caller:   caller,
-		called:   called,
-		date:     date,
-		duration: duration,
+		Caller:   caller,
+		Called:   called,
+		Date:     date,
+		Duration: duration,
 	}, nil
 }
 
@@ -249,11 +241,11 @@ func insertCall(db *sqlite.Conn, call *Call) error {
 
 	defer ins.Finalize()
 
-	_, err = ins.Insert(call.caller,
-		call.called,
-		call.date,
-		call.duration.Seconds(),
-		call.voicemailPath)
+	_, err = ins.Insert(call.Caller,
+		call.Called,
+		call.Date,
+		call.Duration.Seconds(),
+		call.VoicemailPath)
 	if err != nil {
 		return err
 	}
@@ -285,14 +277,14 @@ func ProcessMessage(conn net.Conn, storageDir string) (*Call, error) {
 		return nil, err
 	}
 
-	call.voicemailPath = voicemailPath
-	log.Print("Voicemail saved to ", call.voicemailPath)
+	call.VoicemailPath = voicemailPath[len(storageDir):]
+	log.Print("Voicemail saved to ", call.VoicemailPath)
 
 	return call, nil
 }
 
 func SaveToDB(dbFile string, call *Call) error {
-	db, err := utils.OpenDatabase(dbFile)
+	db, err := OpenDatabase(dbFile)
 	if err != nil {
 		return err
 	}

@@ -8,6 +8,8 @@ import (
 	"path"
 	"testing"
 	"time"
+
+	. "voicemail/utils"
 )
 
 func sendMail(t *testing.T, unixSocket, testData string) {
@@ -71,18 +73,18 @@ func TestReceive(t *testing.T) {
 
 	duration, _ := time.ParseDuration("180s")
 	referenceCall := &Call{
-		caller:        "5552341222",
-		called:        "12312234",
-		date:          time.Unix(1256211300, 0),
-		duration:      duration,
-		voicemailPath: call.voicemailPath,
+		Caller:        "5552341222",
+		Called:        "12312234",
+		Date:          time.Unix(1256211300, 0),
+		Duration:      duration,
+		VoicemailPath: call.VoicemailPath,
 	}
 
-	_, err = os.Stat(call.voicemailPath)
+	_, err = os.Stat(call.VoicemailPath)
 	if err == os.ErrNotExist ||
-		!call.date.Equal(referenceCall.date) ||
-		call.caller != referenceCall.caller ||
-		call.duration.String() != referenceCall.duration.String() {
+		!call.Date.Equal(referenceCall.Date) ||
+		call.Caller != referenceCall.Caller ||
+		call.Duration.String() != referenceCall.Duration.String() {
 		t.Errorf("Call garbled: expected: %v, actual: %v\n", referenceCall, call)
 	}
 }
