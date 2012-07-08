@@ -1,21 +1,26 @@
 package main
 
 import (
+	"flag"
 	"net"
 	"os/user"
 	"strconv"
 	"syscall"
+
 	"voicemail/mail"
 	"voicemail/web"
 )
 
 func main() {
-	Hostname := "localhost"
-	User := "tobias"
-	DatabaseFile := "/home/tobias/src/voicemail/test.sqlite"
-	VoicemailDirectory := "/home/tobias/src/voicemail/mp3/"
-	HttpPort := "8080"
-	SmtpPort := "2500"
+	var Hostname, User, DatabaseFile, VoicemailDirectory, HttpPort, SmtpPort string
+	flag.StringVar(&Hostname, "host", "localhost", "Hostname or IP to bind to")
+	flag.StringVar(&User, "user", "nobody", "User to drop to after binding")
+	flag.StringVar(&DatabaseFile, "database", "./voicemail.sqlite", "Database file location")
+	flag.StringVar(&VoicemailDirectory, "voicemail", "./mp3/", "Voicemail storage directory")
+	flag.StringVar(&HttpPort, "http-port", "8080", "Port for the HTTP service")
+	flag.StringVar(&SmtpPort, "smtp-port", "2500", "Port for the SMTP service")
+
+	flag.Parse()
 
 	smtpListener, err := net.Listen("tcp", Hostname+":"+SmtpPort)
 	if err != nil {
