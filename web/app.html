@@ -1,3 +1,4 @@
+{{define "calls"}}
 <!DOCTYPE html>
 <html lang="de">
   <head>
@@ -6,6 +7,7 @@
     <title>Anrufbeantworter</title>
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
@@ -14,7 +16,7 @@
 
     <!-- Le styles -->
     <link href="favicon.ico" rel="shortcut icon" type="image/x-icon">
-    <link href="http://current.bootstrapcdn.com/bootstrap-v204/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link href="/css" rel="stylesheet">
     <style type="text/css">
       body {
         padding-top: 60px;
@@ -48,14 +50,14 @@
 
       <ul id="navigation" class="nav"></ul>
       <ul class="nav pull-right">
-        <li style="display: none;" bind="visible: telefon.model.player_is_playing">
+        <li style="display: none;" id="playerContainer">
           <!-- <h3>Anruf
           von <span bind="text:telefon.model.player_call_text"></span></h3>
           -->
           <audio id="player"
-                 autoplay="autoplay" type="type/mpeg"
+                 autoplay="autoplay" type="audio/mpeg"
                  controls="controls"
-                 bind="src:telefon.model.player_playing_url" src="/">
+                 src="/nonexistent">
           </audio>
         </li>
 
@@ -66,7 +68,7 @@
 
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span9">
+        <div class="span12">
           <div id="content">
 
             <table class="table">
@@ -79,20 +81,23 @@
     </tr>
   </thead>
   <tbody>
-    <tr bindseq="telefon.model.calls">
-      <td data-name="caller" bind="text: telefon.model.caller_text"></td>
-      <td data-name="duration" width="5em" bind="text: telefon.model.duration_text"></td>
-      <td data-name="date" bind="text: telefon.model.date_text"></td>
+    {{range . }}
+    <tr>
+      <td data-name="caller">{{.Caller}}</td>
+      <td data-name="duration" width="5em">{{.Duration}}</td>
+      <td data-name="date">{{.Date}}</td>
       <td data-name="play" style="text-align: right;">
-        <a class="btn btn-success"
-           bind="click: telefon.controller.play_clicked; href: telefon.model.audio_href">
+        <a class="play-voicemail btn btn-success"
+           href="{{.VoicemailPath}}">
           <i class="icon-play"></i>
         </a>
       </td>
     </tr>
+    {{end}}
   </tbody>
 </table>
 
+<!--            
 <ul class="pager">
   <li class="previous">
     <a href="#" bind="click:telefon.controller.older_clicked">&larr; Ältere</a>
@@ -101,6 +106,7 @@
     <a href="#" bind="click:telefon.controller.newer_clicked">Neuere &rarr;</a>
   </li>
 </ul>
+-->
 
             
           </div>
@@ -116,10 +122,29 @@
 
     </div> <!-- /container -->
       
-    <script type="text/javascript"
-    src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/js"></script>
 <script type="text/javascript">
- 
+$(".play-voicemail").click(function(e) {
+    var i = $(this).find("i");
+    var play = i.hasClass("icon-play");
+    
+    $(".play-voicemail").removeClass("btn-danger").addClass("btn-success");
+    $(".play-voicemail").find("i").removeClass("icon-stop").addClass("icon-play");
+    
+    if(play) {
+        $("#playerContainer").show();
+        $("#player").attr("src", $(this).attr("href"));
+        document.getElementById("player").play();
+        $(this).removeClass("btn-success").addClass("btn-danger");
+        i.removeClass("icon-play").addClass("icon-stop");
+    } else {
+        $("#playerContainer").hide();
+        document.getElementById("player").pause();
+    }
+    
+    e.preventDefault();
+});
 </script>
 </body>
 </html>
+{{end}}
