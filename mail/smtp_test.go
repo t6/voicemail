@@ -71,7 +71,7 @@ func TestReceive(t *testing.T) {
 		t.Error(err)
 	}
 
-	duration, _ := time.ParseDuration("180s")
+	duration, _ := time.ParseDuration("3s")
 	referenceCall := &Call{
 		Caller:        "5552341222",
 		Called:        "12312234",

@@ -124,7 +124,7 @@ func extractCall(msg string) (*Call, error) {
 	called := strings.TrimSpace(strings.Split(split[2][1:], "<")[0])
 
 	duration, err := time.ParseDuration(
-		strings.Replace(strings.TrimSpace(split[5][1:6]), ":", "h", 1) + "m")
+		strings.Replace(strings.TrimSpace(split[5][1:6]), ":", "m", 1) + "s")
 	if err != nil {
 		return nil, err
 	}
