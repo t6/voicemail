@@ -283,7 +283,7 @@ nieger&auml;te" deaktivieren=2E</span>   =09=09=09=09=09=09=09=09=09=09=09=
 
 --==AVM_Fritz_Box==multipart/alternative==1==--
 --==AVM_Fritz_Box==multipart/mixed==0==
-Content-Type: application/octet-stream; name="22.10.09_11.35_Anruf.5552341222.wav"
+Content-Type: audio/x-wav; name="22.10.09_11.35_Anruf.5552341222.wav"
 Content-Disposition: attachment; filename="22.10.09_11.35_Anruf.5552341222.wav"
 Content-Transfer-Encoding: base64
 

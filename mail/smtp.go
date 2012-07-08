@@ -137,8 +137,8 @@ func extractCall(msg string) (*Call, error) {
 		return nil, err
 	}
 
-	date, err := time.Parse("02.01.06 15:04",
-		strings.TrimSpace(split[3][1:9]+" "+split[4][1:6]))
+	date, err := time.Parse("2.01.06 15:04",
+		strings.TrimSpace(strings.Split(split[3][1:], "<")[0]+" "+split[4][1:6]))
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func extractCall(msg string) (*Call, error) {
 }
 
 func extractVoicemail(msg string) ([]byte, error) {
-	voicemailB64, err := extractPart(msg, "application/octet-stream",
+	voicemailB64, err := extractPart(msg, "audio/x-wav",
 		"==AVM_Fritz_Box==multipart/mixed==0==")
 	if err != nil {
 		return nil, err
