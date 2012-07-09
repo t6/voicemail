@@ -130,7 +130,7 @@ func extractCall(msg string) (*Call, error) {
 	}
 
 	date, err := time.Parse("2.01.06 15:04 -0700",
-		strings.TrimSpace(strings.Split(split[3][1:], "<")[0]+" "+split[4][1:6]) + " +0200")
+		strings.TrimSpace(strings.Split(split[3][1:], "<")[0]+" "+split[4][1:6])+" +0200")
 	if err != nil {
 		return nil, err
 	}

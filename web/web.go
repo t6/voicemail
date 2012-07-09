@@ -2,13 +2,13 @@ package web
 
 import (
 	"fmt"
+	"html/template"
 	"log"
-	"path"
 	"math"
 	"net"
-	"time"
 	"net/http"
-	"html/template"
+	"path"
+	"time"
 
 	sqlite "github.com/gwenn/gosqlite"
 
@@ -23,7 +23,7 @@ var voicemailDir string
 
 func isNewMessage(t time.Time) bool {
 	// All messages that are 48 hours old are new messages
-	return math.Abs(time.Now().Sub(t).Hours()) < 48;
+	return math.Abs(time.Now().Sub(t).Hours()) < 48
 }
 
 type Group struct {
@@ -35,13 +35,13 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	s, err := db.Prepare("SELECT * from voicemail ORDER BY date DESC")
 	if err != nil {
 		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-		return;
+		return
 	}
 	defer s.Finalize()
 
 	newMessageGroup := []Call{}
 	oldMessageGroup := []Call{}
-	
+
 	err = s.Select(func(s *sqlite.Stmt) (err error) {
 		var call Call
 		var duration string
@@ -56,9 +56,13 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		if call.Caller == "" { call.Caller = "Unbekannt" }
-		if call.Called == "" { call.Called = "Unbekannt" }
-		
+		if call.Caller == "" {
+			call.Caller = "Unbekannt"
+		}
+		if call.Called == "" {
+			call.Called = "Unbekannt"
+		}
+
 		call.VoicemailPath = path.Join("/voicemail", voicemailPath)
 		call.Duration, _ = time.ParseDuration(duration + "s")
 		if isNewMessage(call.Date) {
@@ -78,7 +82,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	err = rootTemplate.ExecuteTemplate(w, "calls", Group{newMessageGroup, oldMessageGroup})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-		return;
+		return
 	}
 }
 
@@ -98,7 +102,7 @@ func Serve(l net.Listener, dbFile string, voicemailDir string) {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	http.Handle("/voicemail/", http.StripPrefix("/voicemail/",
 		http.FileServer(http.Dir(voicemailDir))))
 
@@ -108,7 +112,7 @@ func Serve(l net.Listener, dbFile string, voicemailDir string) {
 		handleAsset(assets.Glyphicons_halflings_png, "image/png"))
 	http.HandleFunc("/img/glyphicons-halflings-white.png",
 		handleAsset(assets.Glyphicons_halflings_white_png, "image/png"))
-	
+
 	http.HandleFunc("/", rootHandler)
 
 	log.Fatal(http.Serve(l, nil))
