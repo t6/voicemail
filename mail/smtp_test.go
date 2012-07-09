@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	. "voicemail/utils"
+	. "bitbucket.org/tobik/voicemail/utils"
 )
 
 func sendMail(t *testing.T, unixSocket, testData string) {

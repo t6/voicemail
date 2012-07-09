@@ -11,9 +11,9 @@ import (
 
 	sqlite "github.com/gwenn/gosqlite"
 
-	. "voicemail/utils"
+	. "bitbucket.org/tobik/voicemail/utils"
 
-	"voicemail/web/assets"
+	"bitbucket.org/tobik/voicemail/web/assets"
 )
 
 var db *sqlite.Conn

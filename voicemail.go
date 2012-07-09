@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"syscall"
 
-	"voicemail/mail"
-	"voicemail/web"
+	"bitbucket.org/tobik/voicemail/mail"
+	"bitbucket.org/tobik/voicemail/web"
 )
 
 func main() {

@@ -21,7 +21,7 @@ import (
 	sqlite "github.com/gwenn/gosqlite"
 	"github.com/sloonz/go-qprintable"
 
-	. "voicemail/utils"
+	. "bitbucket.org/tobik/voicemail/utils"
 )
 
 func handleData(rd bufio.Reader, out io.Writer) string {
