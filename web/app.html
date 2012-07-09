@@ -26,10 +26,15 @@
       .sidebar-nav {
         padding: 9px 0;
       }
+      .play {
+          width: 5em;
+      }
       .date, .caller {
           width: 10em;
       }
-    </style>
+      .play-link {
+          text-align: right;
+      }
     </style>
 
     <!-- Le fav and touch icons -->
@@ -81,6 +86,7 @@
 <table class="table">
   <thead>
     <tr>
+      <th></th>
       <th>Datum</th>
       <th>Anrufer</th>
       <th>Dauer</th>
@@ -91,15 +97,16 @@
  
 {{range .New}}
     <tr>
-      <td class="date">{{.Date.Format "02.01.2006 15:04"}}</td>
-      <td class="caller">{{.Caller}}</td>
-      <td class="duration" width="5em">{{.Duration}}</td>
-      <td class="play" style="text-align: right;">
+     <td class="play">
         <a class="play-voicemail btn btn-success"
            href="{{.VoicemailPath}}">
           <i class="icon-play"></i>
         </a>
       </td>
+      <td class="date">{{.Date.Format "02.01.2006 15:04"}}</td>
+      <td class="caller">{{.Caller}}</td>
+      <td class="duration">{{.Duration}}</td>
+      <td class="remove"><i class="icon-remove"></i></td>
     </tr>
 {{end}}
 </tbody>
@@ -111,6 +118,7 @@
 <table class="table">
   <thead>
     <tr>
+      <th></th>
       <th>Datum</th>
       <th>Anrufer</th>
       <th>Dauer</th>
@@ -121,15 +129,16 @@
  
 {{range .Old}}
     <tr>
-      <td class="date">{{.Date.Format "02.01.2006 15:04"}}</td>
-      <td class="caller">{{.Caller}}</td>
-      <td class="duration" width="5em">{{.Duration}}</td>
-      <td class="play" style="text-align: right;">
-        <a class="play-voicemail btn btn-success"
+     <td class="play">
+        <a class="play-voicemail-btn btn btn-success"
            href="{{.VoicemailPath}}">
           <i class="icon-play"></i>
         </a>
       </td>
+      <td class="date">{{.Date.Format "02.01.2006 15:04"}}</td>
+      <td class="caller">{{.Caller}}</td>
+      <td class="duration">{{.Duration}}</td>
+      <td class="play-link" style="text-align: right;"><a class="play-voicemail-link" href="{{.VoicemailPath}}">Abspielen</a></td>
     </tr>
 {{end}}
 </tbody>
@@ -150,11 +159,6 @@
             
           </div>
         </div>
-        <div class="span3">
-          <div id="sidebar">
-            
-          </div>
-        </div>
 
       <div id="options"></div>
       <footer></footer>
@@ -163,25 +167,43 @@
       
     <script type="text/javascript" src="/js"></script>
 <script type="text/javascript">
-$(".play-voicemail").click(function(e) {
-    var i = $(this).find("i");
-    var play = i.hasClass("icon-play");
+function resetButtons() {
+    $(".play-voicemail-btn").removeClass("btn-danger").addClass("btn-success");
+    $(".play-voicemail-btn").find("i").removeClass("icon-stop").addClass("icon-play");
+    $(".play-voicemail-link").text("Abspielen");
+}
+
+function play(isplay, link, button) {
+    resetButtons();
     
-    $(".play-voicemail").removeClass("btn-danger").addClass("btn-success");
-    $(".play-voicemail").find("i").removeClass("icon-stop").addClass("icon-play");
-    
-    if(play) {
+    if(isplay) {
         $("#playerContainer").show();
-        $("#player").attr("src", $(this).attr("href"));
+        $("#player").attr("src", link.attr("href"));
         document.getElementById("player").play();
-        $(this).removeClass("btn-success").addClass("btn-danger");
-        i.removeClass("icon-play").addClass("icon-stop");
+        link.text("Stoppen");
+
+        button.removeClass("btn-success").addClass("btn-danger");
+        button.find("i").removeClass("icon-play").addClass("icon-stop");
     } else {
         $("#playerContainer").hide();
         document.getElementById("player").pause();
+        $("#player").attr("src", "");
     }
-    
+}
+
+$(".play-voicemail-btn").click(function(e) {
     e.preventDefault();
+    play($(this).find("i").hasClass("icon-play"),
+         $(this).parent().parent().find(".play-voicemail-link"),
+         $(this));
+});
+
+$(".play-voicemail-link").click(function(e) {
+    e.preventDefault();
+    var playVoicemailBtn = $(this).parent().parent().find(".play-voicemail-btn");
+    play(playVoicemailBtn.find("i").hasClass("icon-play"),
+         $(this),
+         playVoicemailBtn);
 });
 </script>
 </body>
