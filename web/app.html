@@ -26,6 +26,9 @@
       .sidebar-nav {
         padding: 9px 0;
       }
+      .date, .caller {
+          width: 10em;
+      }
     </style>
     </style>
 
@@ -48,7 +51,10 @@
     <div class="container-fluid">
       <a class="brand" href="/">Anrufbeantworter</a>
 
-      <ul id="navigation" class="nav"></ul>
+      <ul id="navigation" class="nav">
+        {{if .New}}<li><a href="#new">Neue Nachrichten</a></li>{{end}}
+        {{if .Old}}<li><a href="#old">Alte Nachrichten</a></li>{{end}}
+      </ul>
       <ul class="nav pull-right">
         <li style="display: none;" id="playerContainer">
           <!-- <h3>Anruf
@@ -70,32 +76,65 @@
       <div class="row-fluid">
         <div class="span12">
           <div id="content">
-
-            <table class="table">
+{{if .New}}
+<h2><a name="new">Neue Nachrichten</a></h2>
+<table class="table">
   <thead>
     <tr>
+      <th>Datum</th>
       <th>Anrufer</th>
       <th>Dauer</th>
-      <th>Datum</th>
       <th></th>
     </tr>
   </thead>
   <tbody>
-    {{range . }}
+ 
+{{range .New}}
     <tr>
-      <td data-name="caller">{{.Caller}}</td>
-      <td data-name="duration" width="5em">{{.Duration}}</td>
-      <td data-name="date">{{.Date}}</td>
-      <td data-name="play" style="text-align: right;">
+      <td class="date">{{.Date.Format "02.01.2006 15:04"}}</td>
+      <td class="caller">{{.Caller}}</td>
+      <td class="duration" width="5em">{{.Duration}}</td>
+      <td class="play" style="text-align: right;">
         <a class="play-voicemail btn btn-success"
            href="{{.VoicemailPath}}">
           <i class="icon-play"></i>
         </a>
       </td>
     </tr>
-    {{end}}
-  </tbody>
+{{end}}
+</tbody>
 </table>
+{{end}}
+
+{{if .Old}}
+<h2><a name="old">Alte Nachrichten</a></h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Datum</th>
+      <th>Anrufer</th>
+      <th>Dauer</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+ 
+{{range .Old}}
+    <tr>
+      <td class="date">{{.Date.Format "02.01.2006 15:04"}}</td>
+      <td class="caller">{{.Caller}}</td>
+      <td class="duration" width="5em">{{.Duration}}</td>
+      <td class="play" style="text-align: right;">
+        <a class="play-voicemail btn btn-success"
+           href="{{.VoicemailPath}}">
+          <i class="icon-play"></i>
+        </a>
+      </td>
+    </tr>
+{{end}}
+</tbody>
+</table>
+{{end}}
 
 <!--            
 <ul class="pager">

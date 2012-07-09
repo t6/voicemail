@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"path"
+	"math"
 	"net"
 	"time"
 	"net/http"
@@ -20,6 +21,16 @@ var db *sqlite.Conn
 var rootTemplate *template.Template
 var voicemailDir string
 
+func isNewMessage(t time.Time) bool {
+	// All messages that are 48 hours old are new messages
+	return math.Abs(time.Now().Sub(t).Hours()) < 48;
+}
+
+type Group struct {
+	New []Call
+	Old []Call
+}
+
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	s, err := db.Prepare("SELECT * from voicemail ORDER BY date DESC")
 	if err != nil {
@@ -28,7 +39,9 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer s.Finalize()
 
-	calls := []Call{}
+	newMessageGroup := []Call{}
+	oldMessageGroup := []Call{}
+	
 	err = s.Select(func(s *sqlite.Stmt) (err error) {
 		var call Call
 		var duration string
@@ -48,17 +61,21 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		
 		call.VoicemailPath = path.Join("/voicemail", voicemailPath)
 		call.Duration, _ = time.ParseDuration(duration + "s")
-		calls = append(calls, call)
+		if isNewMessage(call.Date) {
+			newMessageGroup = append(newMessageGroup, call)
+		} else {
+			oldMessageGroup = append(oldMessageGroup, call)
+		}
 
 		return err
 	})
-	
+
 	if err != nil {
 		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
 		return
 	}
 
-	err = rootTemplate.ExecuteTemplate(w, "calls", calls)
+	err = rootTemplate.ExecuteTemplate(w, "calls", Group{newMessageGroup, oldMessageGroup})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
 		return;
