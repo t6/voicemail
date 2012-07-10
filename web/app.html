@@ -177,7 +177,7 @@ function play(isplay, link, button) {
     resetButtons();
     
     if(isplay) {
-        $("#playerContainer").show();
+        //$("#playerContainer").show();
         $("#player").attr("src", link.attr("href"));
         document.getElementById("player").play();
         link.text("Stoppen");
@@ -185,7 +185,7 @@ function play(isplay, link, button) {
         button.removeClass("btn-success").addClass("btn-danger");
         button.find("i").removeClass("icon-play").addClass("icon-stop");
     } else {
-        $("#playerContainer").hide();
+        //$("#playerContainer").hide();
         document.getElementById("player").pause();
         $("#player").attr("src", "");
     }
