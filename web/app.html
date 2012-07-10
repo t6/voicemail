@@ -98,7 +98,7 @@
 {{range .New}}
     <tr>
      <td class="play">
-        <a class="play-voicemail btn btn-success"
+        <a class="play-voicemail-btn btn btn-success"
            href="{{.VoicemailPath}}">
           <i class="icon-play"></i>
         </a>
@@ -106,7 +106,7 @@
       <td class="date">{{.Date.Format "02.01.2006 15:04"}}</td>
       <td class="caller">{{.Caller}}</td>
       <td class="duration">{{.Duration}}</td>
-      <td class="remove"><i class="icon-remove"></i></td>
+      <td class="play-link" style="text-align: right;"><a class="play-voicemail-link" href="{{.VoicemailPath}}">Abspielen</a></td>
     </tr>
 {{end}}
 </tbody>
