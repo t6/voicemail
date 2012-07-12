@@ -2,14 +2,18 @@ package main
 
 import (
 	"flag"
+	"log"
 	"net"
 	"os/user"
 	"strconv"
 	"syscall"
 
 	"bitbucket.org/tobik/voicemail/mail"
+	"bitbucket.org/tobik/voicemail/utils"
 	"bitbucket.org/tobik/voicemail/web"
 )
+
+var logger *log.Logger = utils.Logger("voicemail")
 
 func main() {
 	var Hostname, User, DatabaseFile, VoicemailDirectory, HttpPort, SmtpPort string
@@ -24,27 +28,27 @@ func main() {
 
 	smtpListener, err := net.Listen("tcp", Hostname+":"+SmtpPort)
 	if err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
 
 	httpListener, err := net.Listen("tcp", Hostname+":"+HttpPort)
 	if err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
 
 	u, err := user.Lookup(User)
 	if err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
 
 	uid, _ := strconv.Atoi(u.Uid)
 	gid, _ := strconv.Atoi(u.Gid)
 
 	if err = syscall.Setgid(gid); err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
 	if err = syscall.Setuid(uid); err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
 
 	go mail.Serve(smtpListener, DatabaseFile, VoicemailDirectory)

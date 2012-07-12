@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
+	log "log"
 	"mime/multipart"
 	"net"
 	"net/mail"
@@ -23,6 +23,8 @@ import (
 
 	. "bitbucket.org/tobik/voicemail/utils"
 )
+
+var logger *log.Logger = Logger("mail")
 
 func handleData(rd bufio.Reader, out io.Writer) string {
 	// Stolen from go-smtpd:
@@ -264,7 +266,7 @@ func ProcessMessage(conn net.Conn, storageDir string) (*Call, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Print("Received new voicemail ", call)
+	logger.Print("Received new voicemail ", call)
 
 	voicemail, err := extractVoicemail(msg)
 	if err != nil {
@@ -273,12 +275,12 @@ func ProcessMessage(conn net.Conn, storageDir string) (*Call, error) {
 
 	voicemailPath, err := saveVoicemail(storageDir, voicemail)
 	if err != nil {
-		log.Print("Unable to save voicemail as MP3: ", err)
+		logger.Print("Unable to save voicemail as MP3: ", err)
 		return nil, err
 	}
 
 	call.VoicemailPath = path.Base(voicemailPath)
-	log.Print("Voicemail saved to ", call.VoicemailPath)
+	logger.Print("Voicemail saved to ", call.VoicemailPath)
 
 	return call, nil
 }
@@ -307,19 +309,19 @@ func Serve(l net.Listener, dbFile, mp3Dir string) {
 	for {
 		conn, err := l.Accept()
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal(err)
 			continue
 		}
 
-		log.Print("Incoming voicemail from ", conn.RemoteAddr(), "?")
+		logger.Print("Incoming voicemail from ", conn.RemoteAddr(), "?")
 		call, err := ProcessMessage(conn, mp3Dir)
 		if err != nil {
-			log.Print("Unable to process voicemail: ", err)
+			logger.Print("Unable to process voicemail: ", err)
 		} else {
 			if err := SaveToDB(dbFile, call); err != nil {
-				log.Print("Unable to save to database: ", err)
+				logger.Print("Unable to save to database: ", err)
 			} else {
-				log.Print("Save to database successfull.")
+				logger.Print("Save to database successfull.")
 			}
 		}
 		conn.Close()

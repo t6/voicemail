@@ -20,6 +20,7 @@ import (
 var db *sqlite.Conn
 var rootTemplate *template.Template
 var voicemailDir string
+var logger *log.Logger = Logger("web")
 
 func isNewMessage(t time.Time) bool {
 	// All messages that are 48 hours old are new messages
@@ -115,5 +116,5 @@ func Serve(l net.Listener, dbFile string, voicemailDir string) {
 
 	http.HandleFunc("/", rootHandler)
 
-	log.Fatal(http.Serve(l, nil))
+	logger.Fatal(http.Serve(l, nil))
 }
