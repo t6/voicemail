@@ -182,6 +182,7 @@ func extractVoicemail(msg string) ([]byte, error) {
 		return nil, err
 	}
 	if err := lame.Run(); err != nil {
+		mplayer.Process.Kill()
 		return nil, err
 	}
 
