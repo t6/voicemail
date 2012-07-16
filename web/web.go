@@ -107,7 +107,8 @@ func Serve(l net.Listener, dbFile string, voicemailDir string) {
 	http.Handle("/voicemail/", http.StripPrefix("/voicemail/",
 		http.FileServer(http.Dir(voicemailDir))))
 
-	http.HandleFunc("/js", handleAsset(assets.Jquery_min_js, "text/javascript"))
+	http.HandleFunc("/js/jquery.min.js",
+		handleAsset(assets.Jquery_min_js, "text/javascript"))
 	http.HandleFunc("/css", handleAsset(assets.Bootstrap_combined_min_css, "text/css"))
 	http.HandleFunc("/img/glyphicons-halflings.png",
 		handleAsset(assets.Glyphicons_halflings_png, "image/png"))

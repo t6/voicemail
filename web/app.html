@@ -66,8 +66,7 @@
           von <span bind="text:telefon.model.player_call_text"></span></h3>
           -->
           <audio id="player"
-                 autoplay="autoplay" type="audio/mpeg"
-                 controls="controls"
+                 type="audio/mpeg"
                  src="/nonexistent">
           </audio>
         </li>
@@ -164,32 +163,40 @@
       <footer></footer>
 
     </div> <!-- /container -->
-      
-    <script type="text/javascript" src="/js"></script>
+
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
 <script type="text/javascript">
 function resetButtons() {
-    $(".play-voicemail-btn").removeClass("btn-danger").addClass("btn-success");
+    $(".play-voicemail-btn").removeClass("btn-danger").addClass("btn-success").removeClass("currently-loading");
     $(".play-voicemail-btn").find("i").removeClass("icon-stop").addClass("icon-play");
     $(".play-voicemail-link").text("Abspielen");
 }
 
 function play(isplay, link, button) {
+    if(button.hasClass("currently-loading")) {
+        return;
+    }
+   
     resetButtons();
-    
     if(isplay) {
-        //$("#playerContainer").show();
         $("#player").attr("src", link.attr("href"));
-        document.getElementById("player").play();
+        button.addClass("currently-loading");
+        
         link.text("Stoppen");
-
         button.removeClass("btn-success").addClass("btn-danger");
         button.find("i").removeClass("icon-play").addClass("icon-stop");
     } else {
-        //$("#playerContainer").hide();
         document.getElementById("player").pause();
-        $("#player").attr("src", "");
     }
 }
+
+$("#player").bind("ended", function() {
+    $("#player").attr("src", "");
+    resetButtons();
+}).bind("canplay", function() {
+    this.play();
+    $(".play-voicemail-btn").removeClass("currently-loading");
+});
 
 $(".play-voicemail-btn").click(function(e) {
     e.preventDefault();
@@ -205,6 +212,9 @@ $(".play-voicemail-link").click(function(e) {
          $(this),
          playVoicemailBtn);
 });
+
+
+
 </script>
 </body>
 </html>
