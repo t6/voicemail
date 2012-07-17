@@ -35,6 +35,9 @@
       .play-link {
           text-align: right;
       }
+      .table tbody tr:hover td, .table tbody tr:hover th {
+           background-color: white;
+      }
     </style>
 
     <!-- Le fav and touch icons -->
@@ -179,12 +182,13 @@ function play(isplay, link, button) {
    
     resetButtons();
     if(isplay) {
-        $("#player").attr("src", link.attr("href"));
         button.addClass("currently-loading");
-        
         link.text("Stoppen");
         button.removeClass("btn-success").addClass("btn-danger");
         button.find("i").removeClass("icon-play").addClass("icon-stop");
+
+        $("#player").attr("src", link.attr("href"));
+        document.getElementById("player").load();
     } else {
         document.getElementById("player").pause();
     }
