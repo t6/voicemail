@@ -8,6 +8,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no" />
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
@@ -100,15 +101,20 @@
 {{range .New}}
     <tr>
      <td class="play">
-        <a class="play-voicemail-btn btn btn-success"
-           href="{{.VoicemailPath}}">
+        <button class="play-voicemail-btn-left btn btn-success"
+                data-voicemail="{{.VoicemailPath}}">
           <i class="icon-play"></i>
-        </a>
+        </button>
       </td>
       <td class="date">{{.Date.Format "02.01.2006 15:04"}}</td>
       <td class="caller">{{.Caller}}</td>
       <td class="duration">{{.Duration}}</td>
-      <td class="play-link" style="text-align: right;"><a class="play-voicemail-link" href="{{.VoicemailPath}}">Abspielen</a></td>
+      <td class="play-link" style="text-align: right;">
+        <button class="btn play-voicemail-btn-right"
+                data-voicemail="{{.VoicemailPath}}">
+          Abspielen
+        </button>
+      </td>
     </tr>
 {{end}}
 </tbody>
@@ -132,15 +138,20 @@
 {{range .Old}}
     <tr>
      <td class="play">
-        <a class="play-voicemail-btn btn btn-success"
-           href="{{.VoicemailPath}}">
+        <button class="play-voicemail-btn-left btn btn-success"
+                data-voicemail="{{.VoicemailPath}}">
           <i class="icon-play"></i>
-        </a>
+        </button>
       </td>
       <td class="date">{{.Date.Format "02.01.2006 15:04"}}</td>
       <td class="caller">{{.Caller}}</td>
       <td class="duration">{{.Duration}}</td>
-      <td class="play-link" style="text-align: right;"><a class="play-voicemail-link" href="{{.VoicemailPath}}">Abspielen</a></td>
+      <td class="play-link" style="text-align: right;">
+        <button class="btn play-voicemail-btn-right"
+                data-voicemail="{{.VoicemailPath}}">
+          Abspielen
+        </button>
+      </td>
     </tr>
 {{end}}
 </tbody>
@@ -170,9 +181,9 @@
     <script type="text/javascript" src="/js/jquery.min.js"></script>
 <script type="text/javascript">
 function resetButtons() {
-    $(".play-voicemail-btn").removeClass("btn-danger").addClass("btn-success").removeClass("currently-loading");
-    $(".play-voicemail-btn").find("i").removeClass("icon-stop").addClass("icon-play");
-    $(".play-voicemail-link").text("Abspielen");
+    $(".play-voicemail-btn-left").removeClass("btn-danger").addClass("btn-success").removeClass("currently-loading");
+    $(".play-voicemail-btn-left").find("i").removeClass("icon-stop").addClass("icon-play");
+    $(".play-voicemail-btn-right").text("Abspielen");
 }
 
 function play(isplay, link, button) {
@@ -187,7 +198,7 @@ function play(isplay, link, button) {
         button.removeClass("btn-success").addClass("btn-danger");
         button.find("i").removeClass("icon-play").addClass("icon-stop");
 
-        $("#player").attr("src", link.attr("href"));
+        $("#player").attr("src", link.data("voicemail"));
         document.getElementById("player").load();
     } else {
         document.getElementById("player").pause();
@@ -199,19 +210,19 @@ $("#player").bind("ended", function() {
     resetButtons();
 }).bind("canplay", function() {
     this.play();
-    $(".play-voicemail-btn").removeClass("currently-loading");
+    $(".play-voicemail-btn-left").removeClass("currently-loading");
 });
 
-$(".play-voicemail-btn").click(function(e) {
+$(".play-voicemail-btn-left").click(function(e) {
     e.preventDefault();
     play($(this).find("i").hasClass("icon-play"),
-         $(this).parent().parent().find(".play-voicemail-link"),
+         $(this).parent().parent().find(".play-voicemail-btn-right"),
          $(this));
 });
 
-$(".play-voicemail-link").click(function(e) {
+$(".play-voicemail-btn-right").click(function(e) {
     e.preventDefault();
-    var playVoicemailBtn = $(this).parent().parent().find(".play-voicemail-btn");
+    var playVoicemailBtn = $(this).parent().parent().find(".play-voicemail-btn-left");
     play(playVoicemailBtn.find("i").hasClass("icon-play"),
          $(this),
          playVoicemailBtn);
