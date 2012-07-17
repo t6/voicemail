@@ -178,58 +178,74 @@
 
     </div> <!-- /container -->
 
-    <script type="text/javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" src="/js/zepto.min.js"></script>
 <script type="text/javascript">
+var currentlyPlaying = null;
+var player = document.getElementById("player");
+
 function resetButtons() {
-    $(".play-voicemail-btn-left").removeClass("btn-danger").addClass("btn-success").removeClass("currently-loading");
-    $(".play-voicemail-btn-left").find("i").removeClass("icon-stop").addClass("icon-play");
-    $(".play-voicemail-btn-right").text("Abspielen");
+    if(currentlyPlaying === null) return;
+
+    player.pause();
+    player.src = null;
+    
+    currentlyPlaying.leftButton
+        .removeClass("btn-danger")
+        .addClass("btn-success")
+        .removeClass("currently-loading")
+        .find("i")
+        .removeClass("icon-stop")
+        .addClass("icon-play");
+    currentlyPlaying.rightButton.text("Abspielen");
 }
 
-function play(isplay, link, button) {
-    if(button.hasClass("currently-loading")) {
+function play(isplay, leftButton, rightButton) {
+    if(leftButton.hasClass("currently-loading")) {
         return;
     }
-   
-    resetButtons();
-    if(isplay) {
-        button.addClass("currently-loading");
-        link.text("Stoppen");
-        button.removeClass("btn-success").addClass("btn-danger");
-        button.find("i").removeClass("icon-play").addClass("icon-stop");
 
-        $("#player").attr("src", link.data("voicemail"));
-        document.getElementById("player").load();
-    } else {
-        document.getElementById("player").pause();
+    resetButtons();
+    player.pause();
+    
+    if(isplay) {
+        currentlyPlaying = {leftButton: leftButton, rightButton: rightButton};
+        player.src = leftButton.data("voicemail");
+        player.load();
+
+        rightButton.text("Stoppen");
+        leftButton
+            .addClass("currently-loading")
+            .removeClass("btn-success")
+            .addClass("btn-danger")
+            .find("i")
+            .removeClass("icon-play")
+            .addClass("icon-stop");
     }
 }
 
-$("#player").bind("ended", function() {
-    $("#player").attr("src", "");
+player.addEventListener("ended", function() {
+    this.src = null;
     resetButtons();
-}).bind("canplay", function() {
+});
+
+player.addEventListener("canplay", function() {
     this.play();
-    $(".play-voicemail-btn-left").removeClass("currently-loading");
+    currentlyPlaying.leftButton.removeClass("currently-loading");
 });
 
 $(".play-voicemail-btn-left").click(function(e) {
-    e.preventDefault();
+    var rightButton = $(this.parentNode.parentNode).find(".play-voicemail-btn-right");
     play($(this).find("i").hasClass("icon-play"),
-         $(this).parent().parent().find(".play-voicemail-btn-right"),
-         $(this));
+         $(this),
+         rightButton);
 });
 
 $(".play-voicemail-btn-right").click(function(e) {
-    e.preventDefault();
-    var playVoicemailBtn = $(this).parent().parent().find(".play-voicemail-btn-left");
-    play(playVoicemailBtn.find("i").hasClass("icon-play"),
-         $(this),
-         playVoicemailBtn);
+    var leftButton = $(this.parentNode.parentNode).find(".play-voicemail-btn-left");
+    play(leftButton.find("i").hasClass("icon-play"),
+         leftButton,
+         $(this));
 });
-
-
-
 </script>
 </body>
 </html>
