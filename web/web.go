@@ -114,6 +114,8 @@ func Serve(l net.Listener, dbFile string, voicemailDir string) {
 		handleAsset(assets.Glyphicons_halflings_png, "image/png"))
 	http.HandleFunc("/img/glyphicons-halflings-white.png",
 		handleAsset(assets.Glyphicons_halflings_white_png, "image/png"))
+	http.HandleFunc("/img/apple-touch-icon.png",
+		handleAsset(assets.Apple_touch_icon_png, "image/png"))
 
 	http.HandleFunc("/", rootHandler)
 
