@@ -16,13 +16,14 @@ import (
 var logger *log.Logger = utils.Logger("voicemail")
 
 func main() {
-	var Hostname, User, DatabaseFile, VoicemailDirectory, HttpPort, SmtpPort string
+	var Hostname, User, DatabaseFile, VoicemailDirectory, HttpPort, SmtpPort, Limit string
 	flag.StringVar(&Hostname, "host", "localhost", "Hostname or IP to bind to")
 	flag.StringVar(&User, "user", "nobody", "User to drop to after binding")
 	flag.StringVar(&DatabaseFile, "database", "./voicemail.sqlite", "Database file location")
 	flag.StringVar(&VoicemailDirectory, "voicemail", "./mp3/", "Voicemail storage directory")
 	flag.StringVar(&HttpPort, "http-port", "8080", "Port for the HTTP service")
 	flag.StringVar(&SmtpPort, "smtp-port", "2500", "Port for the SMTP service")
+	flag.IntVar(&Limit, "limit", -1, "Only display this many voicemails in the web interface")
 
 	flag.Parse()
 
@@ -52,5 +53,5 @@ func main() {
 	}
 
 	go mail.Serve(smtpListener, DatabaseFile, VoicemailDirectory)
-	web.Serve(httpListener, DatabaseFile, VoicemailDirectory)
+	web.Serve(httpListener, DatabaseFile, VoicemailDirectory, Limit)
 }

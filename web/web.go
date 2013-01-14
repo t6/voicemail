@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"path"
+	"strconv"
 	"time"
 
 	sqlite "github.com/gwenn/gosqlite"
@@ -19,7 +20,6 @@ import (
 
 var db *sqlite.Conn
 var rootTemplate *template.Template
-var voicemailDir string
 var logger *log.Logger = Logger("web")
 
 func isNewMessage(t time.Time) bool {
@@ -32,58 +32,62 @@ type Group struct {
 	Old []Call
 }
 
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	s, err := db.Prepare("SELECT * from voicemail ORDER BY date DESC LIMIT 30")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-		return
-	}
-	defer s.Finalize()
+func rootHandler(limit int) func(http.ResponseWriter, *http.Request) {
+	query := "SELECT * FROM voicemail ORDER BY date DESC LIMIT " + strconv.Itoa(limit)
 
-	newMessageGroup := []Call{}
-	oldMessageGroup := []Call{}
+	return func(w http.ResponseWriter, r *http.Request) {
+		s, err := db.Prepare(query)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
+			return
+		}
+		defer s.Finalize()
 
-	err = s.Select(func(s *sqlite.Stmt) (err error) {
-		var call Call
-		var duration string
-		var voicemailPath string
-		if err = s.NamedScan(
-			"id", &call.Id,
-			"caller", &call.Caller,
-			"called", &call.Called,
-			"date", &call.Date,
-			"duration", &duration,
-			"voicemail", &voicemailPath); err != nil {
+		newMessageGroup := []Call{}
+		oldMessageGroup := []Call{}
+
+		err = s.Select(func(s *sqlite.Stmt) (err error) {
+			var call Call
+			var duration string
+			var voicemailPath string
+			if err = s.NamedScan(
+				"id", &call.Id,
+				"caller", &call.Caller,
+				"called", &call.Called,
+				"date", &call.Date,
+				"duration", &duration,
+				"voicemail", &voicemailPath); err != nil {
+				return err
+			}
+
+			if call.Caller == "" {
+				call.Caller = "Unbekannt"
+			}
+			if call.Called == "" {
+				call.Called = "Unbekannt"
+			}
+
+			call.VoicemailPath = path.Join("/voicemail", voicemailPath)
+			call.Duration, _ = time.ParseDuration(duration + "s")
+			if isNewMessage(call.Date) {
+				newMessageGroup = append(newMessageGroup, call)
+			} else {
+				oldMessageGroup = append(oldMessageGroup, call)
+			}
+
 			return err
+		})
+
+		if err != nil {
+			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
+			return
 		}
 
-		if call.Caller == "" {
-			call.Caller = "Unbekannt"
+		err = rootTemplate.ExecuteTemplate(w, "calls", Group{newMessageGroup, oldMessageGroup})
+		if err != nil {
+			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
+			return
 		}
-		if call.Called == "" {
-			call.Called = "Unbekannt"
-		}
-
-		call.VoicemailPath = path.Join("/voicemail", voicemailPath)
-		call.Duration, _ = time.ParseDuration(duration + "s")
-		if isNewMessage(call.Date) {
-			newMessageGroup = append(newMessageGroup, call)
-		} else {
-			oldMessageGroup = append(oldMessageGroup, call)
-		}
-
-		return err
-	})
-
-	if err != nil {
-		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-		return
-	}
-
-	err = rootTemplate.ExecuteTemplate(w, "calls", Group{newMessageGroup, oldMessageGroup})
-	if err != nil {
-		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-		return
 	}
 }
 
@@ -94,7 +98,7 @@ func handleAsset(f func() []byte, t string) func(http.ResponseWriter, *http.Requ
 	}
 }
 
-func Serve(l net.Listener, dbFile string, voicemailDir string) {
+func Serve(l net.Listener, dbFile string, voicemailDir string, limit int) {
 	db, _ = OpenDatabase(dbFile)
 	defer db.Close()
 
@@ -117,7 +121,7 @@ func Serve(l net.Listener, dbFile string, voicemailDir string) {
 	http.HandleFunc("/img/apple-touch-icon.png",
 		handleAsset(assets.Apple_touch_icon_png, "image/png"))
 
-	http.HandleFunc("/", rootHandler)
+	http.HandleFunc("/", rootHandler(limit))
 
 	logger.Fatal(http.Serve(l, nil))
 }
