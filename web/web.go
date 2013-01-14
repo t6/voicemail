@@ -33,7 +33,7 @@ type Group struct {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	s, err := db.Prepare("SELECT * from voicemail ORDER BY date DESC")
+	s, err := db.Prepare("SELECT * from voicemail ORDER BY date DESC LIMIT 30")
 	if err != nil {
 		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
 		return
