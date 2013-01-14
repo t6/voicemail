@@ -16,7 +16,9 @@ import (
 var logger *log.Logger = utils.Logger("voicemail")
 
 func main() {
-	var Hostname, User, DatabaseFile, VoicemailDirectory, HttpPort, SmtpPort, Limit string
+	var Hostname, User, DatabaseFile, VoicemailDirectory, HttpPort, SmtpPort string
+	var Limit int
+
 	flag.StringVar(&Hostname, "host", "localhost", "Hostname or IP to bind to")
 	flag.StringVar(&User, "user", "nobody", "User to drop to after binding")
 	flag.StringVar(&DatabaseFile, "database", "./voicemail.sqlite", "Database file location")
