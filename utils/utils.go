@@ -12,6 +12,6 @@ func Logger(prefix string) *log.Logger {
 	}
 
 	logger.SetPrefix("[" + prefix + "] ")
-	
-	return logger;
+
+	return logger
 }

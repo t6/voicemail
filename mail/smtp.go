@@ -78,8 +78,6 @@ func receiveMessage(in bufio.Reader, out io.Writer) (string, error) {
 			return "", errors.New("No message received!")
 		}
 	}
-
-	return "", errors.New("No message received!")
 }
 
 func extractPart(rawMsg string, contentType string, boundary string) ([]byte, error) {

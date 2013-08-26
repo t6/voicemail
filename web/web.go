@@ -10,8 +10,8 @@ import (
 	"path"
 	"time"
 
-	. "bitbucket.org/tobik/voicemail/utils"
 	"bitbucket.org/tobik/voicemail/model"
+	. "bitbucket.org/tobik/voicemail/utils"
 
 	"bitbucket.org/tobik/voicemail/web/assets"
 )
@@ -37,7 +37,7 @@ func rootHandler(db model.Database, limit int) func(http.ResponseWriter, *http.R
 		voicemails, err := db.GetVoicemails(limit)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-			return			
+			return
 		}
 
 		for _, voicemail := range voicemails {
