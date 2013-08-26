@@ -30,7 +30,7 @@ you need to use `-smtp-port=25`. Output of `voicemail -h`:
     -limit=-1: Only display this many voicemails in the web interface
     -smtp-port="2500": Port for the SMTP service
     -user="nobody": User to drop to after binding
-    -voicemail="./mp3/": Voicemail storage directory```
+    -voicemail="./mp3/": Voicemail storage directory
 
 ## License
 
