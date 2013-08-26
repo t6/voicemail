@@ -18,7 +18,6 @@ import (
 	"bitbucket.org/tobik/voicemail/web/assets"
 )
 
-var db *sqlite.Conn
 var rootTemplate *template.Template
 var logger *log.Logger = Logger("web")
 
@@ -32,7 +31,7 @@ type Group struct {
 	Old []Call
 }
 
-func rootHandler(limit int) func(http.ResponseWriter, *http.Request) {
+func rootHandler(db *sqlite.Conn, limit int) func(http.ResponseWriter, *http.Request) {
 	query := "SELECT * FROM voicemail ORDER BY date DESC LIMIT " + strconv.Itoa(limit)
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -98,10 +97,7 @@ func handleAsset(f func() []byte, t string) func(http.ResponseWriter, *http.Requ
 	}
 }
 
-func Serve(l net.Listener, dbFile string, voicemailDir string, limit int) {
-	db, _ = OpenDatabase(dbFile)
-	defer db.Close()
-
+func Serve(l net.Listener, db *sqlite.Conn, voicemailDir string, limit int) {
 	rootTemplate = template.New("root")
 	_, err := rootTemplate.Parse(string(app_html()))
 	if err != nil {
@@ -121,7 +117,7 @@ func Serve(l net.Listener, dbFile string, voicemailDir string, limit int) {
 	http.HandleFunc("/img/apple-touch-icon.png",
 		handleAsset(assets.Apple_touch_icon_png, "image/png"))
 
-	http.HandleFunc("/", rootHandler(limit))
+	http.HandleFunc("/", rootHandler(db, limit))
 
 	logger.Fatal(http.Serve(l, nil))
 }

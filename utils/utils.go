@@ -19,9 +19,9 @@ type Call struct {
 
 func OpenDatabase(dbFile string) (*sqlite.Conn, error) {
 	db, err := sqlite.Open(dbFile,
-		sqlite.OPEN_READWRITE,
-		sqlite.OPEN_CREATE,
-		sqlite.OPEN_FULLMUTEX)
+		sqlite.OpenReadWrite,
+		sqlite.OpenCreate,
+		sqlite.OpenFullMutex)
 	return db, err
 }
 

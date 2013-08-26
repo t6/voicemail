@@ -286,11 +286,7 @@ func ProcessMessage(conn net.Conn, storageDir string) (*Call, error) {
 	return call, nil
 }
 
-func SaveToDB(dbFile string, call *Call) error {
-	db, err := OpenDatabase(dbFile)
-	if err != nil {
-		return err
-	}
+func SaveToDB(db *sqlite.Conn, call *Call) error {
 	defer db.Close()
 
 	if err := createTable(db); err != nil {
@@ -304,7 +300,7 @@ func SaveToDB(dbFile string, call *Call) error {
 	return nil
 }
 
-func Serve(l net.Listener, dbFile, mp3Dir string) {
+func Serve(l net.Listener, db *sqlite.Conn, mp3Dir string) {
 	defer l.Close()
 
 	for {
@@ -319,7 +315,7 @@ func Serve(l net.Listener, dbFile, mp3Dir string) {
 		if err != nil {
 			logger.Print("Unable to process voicemail: ", err)
 		} else {
-			if err := SaveToDB(dbFile, call); err != nil {
+			if err := SaveToDB(db, call); err != nil {
 				logger.Print("Unable to save to database: ", err)
 			} else {
 				logger.Print("Save to database successfull.")

@@ -54,6 +54,11 @@ func main() {
 		logger.Panic(err)
 	}
 
-	go mail.Serve(smtpListener, DatabaseFile, VoicemailDirectory)
-	web.Serve(httpListener, DatabaseFile, VoicemailDirectory, Limit)
+	db, err := utils.OpenDatabase(DatabaseFile)
+	if err != nil {
+		logger.Panic(err)
+	}
+
+	go mail.Serve(smtpListener, db, VoicemailDirectory)
+	web.Serve(httpListener, db, VoicemailDirectory, Limit)
 }
