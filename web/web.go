@@ -8,12 +8,10 @@ import (
 	"net"
 	"net/http"
 	"path"
-	"strconv"
 	"time"
 
-	sqlite "github.com/gwenn/gosqlite"
-
 	. "bitbucket.org/tobik/voicemail/utils"
+	"bitbucket.org/tobik/voicemail/model"
 
 	"bitbucket.org/tobik/voicemail/web/assets"
 )
@@ -27,59 +25,29 @@ func isNewMessage(t time.Time) bool {
 }
 
 type Group struct {
-	New []Call
-	Old []Call
+	New []model.Voicemail
+	Old []model.Voicemail
 }
 
-func rootHandler(db *sqlite.Conn, limit int) func(http.ResponseWriter, *http.Request) {
-	query := "SELECT * FROM voicemail ORDER BY date DESC LIMIT " + strconv.Itoa(limit)
-
+func rootHandler(db model.Database, limit int) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s, err := db.Prepare(query)
+		newMessageGroup := []model.Voicemail{}
+		oldMessageGroup := []model.Voicemail{}
+
+		voicemails, err := db.GetVoicemails(limit)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-			return
+			return			
 		}
-		defer s.Finalize()
 
-		newMessageGroup := []Call{}
-		oldMessageGroup := []Call{}
+		for _, voicemail := range voicemails {
+			voicemail.VoicemailPath = path.Join("/voicemail", voicemail.VoicemailPath)
 
-		err = s.Select(func(s *sqlite.Stmt) (err error) {
-			var call Call
-			var duration string
-			var voicemailPath string
-			if err = s.NamedScan(
-				"id", &call.Id,
-				"caller", &call.Caller,
-				"called", &call.Called,
-				"date", &call.Date,
-				"duration", &duration,
-				"voicemail", &voicemailPath); err != nil {
-				return err
-			}
-
-			if call.Caller == "" {
-				call.Caller = "Unbekannt"
-			}
-			if call.Called == "" {
-				call.Called = "Unbekannt"
-			}
-
-			call.VoicemailPath = path.Join("/voicemail", voicemailPath)
-			call.Duration, _ = time.ParseDuration(duration + "s")
-			if isNewMessage(call.Date) {
-				newMessageGroup = append(newMessageGroup, call)
+			if isNewMessage(voicemail.Date) {
+				newMessageGroup = append(newMessageGroup, voicemail)
 			} else {
-				oldMessageGroup = append(oldMessageGroup, call)
+				oldMessageGroup = append(oldMessageGroup, voicemail)
 			}
-
-			return err
-		})
-
-		if err != nil {
-			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-			return
 		}
 
 		err = rootTemplate.ExecuteTemplate(w, "calls", Group{newMessageGroup, oldMessageGroup})
@@ -97,7 +65,7 @@ func handleAsset(f func() []byte, t string) func(http.ResponseWriter, *http.Requ
 	}
 }
 
-func Serve(l net.Listener, db *sqlite.Conn, voicemailDir string, limit int) {
+func Serve(l net.Listener, db model.Database, voicemailDir string, limit int) {
 	rootTemplate = template.New("root")
 	_, err := rootTemplate.Parse(string(app_html()))
 	if err != nil {

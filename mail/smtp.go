@@ -12,15 +12,13 @@ import (
 	"mime/multipart"
 	"net"
 	"net/mail"
-	"os"
 	"os/exec"
-	"path"
 	"strings"
 	"time"
 
-	sqlite "github.com/gwenn/gosqlite"
 	"github.com/sloonz/go-qprintable"
 
+	"bitbucket.org/tobik/voicemail/model"
 	. "bitbucket.org/tobik/voicemail/utils"
 )
 
@@ -110,12 +108,12 @@ func unquote(quotedText []byte) string {
 	return string(unquoted)
 }
 
-func extractCall(msg string) (*Call, error) {
+func extractCall(msg string) (model.Voicemail, error) {
 	metadata, err := extractPart(msg,
 		"text/html",
 		"==AVM_Fritz_Box==multipart/alternative==1==")
 	if err != nil {
-		return nil, err
+		return model.Voicemail{}, err
 	}
 
 	html := unquote(metadata)
@@ -128,16 +126,16 @@ func extractCall(msg string) (*Call, error) {
 	duration, err := time.ParseDuration(
 		strings.Replace(strings.TrimSpace(split[5][1:6]), ":", "m", 1) + "s")
 	if err != nil {
-		return nil, err
+		return model.Voicemail{}, err
 	}
 
 	date, err := time.Parse("2.01.2006 15:04 -0700",
 		strings.TrimSpace(strings.Split(split[3][1:], "<")[0]+" "+split[4][1:6])+" +0200")
 	if err != nil {
-		return nil, err
+		return model.Voicemail{}, err
 	}
 
-	return &Call{
+	return model.Voicemail{
 		Caller:   caller,
 		Called:   called,
 		Date:     date,
@@ -145,7 +143,7 @@ func extractCall(msg string) (*Call, error) {
 	}, nil
 }
 
-func extractVoicemail(msg string) ([]byte, error) {
+func extractVoicemailAudio(msg string) ([]byte, error) {
 	voicemailB64, err := extractPart(msg, "audio/x-wav",
 		"==AVM_Fritz_Box==multipart/mixed==0==")
 	if err != nil {
@@ -189,118 +187,28 @@ func extractVoicemail(msg string) ([]byte, error) {
 	return lameOut.Bytes(), nil
 }
 
-func createFile(dir string, filenameBase, filenameExt string) (string, *os.File, error) {
-	var (
-		file     *os.File
-		err      error
-		maxTries = 50
-	)
-
-	filename := path.Join(dir, filenameBase+filenameExt)
-	for i := 0; i < maxTries; i++ {
-		if file, err = os.OpenFile(filename,
-			os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600); err == nil {
-			break
-		}
-
-		filename = path.Join(dir, fmt.Sprintf("%s-%d.mp3", filenameBase, i))
-	}
-
-	if file == nil || err != nil {
-		return "", nil, err
-	}
-
-	return filename, file, nil
-}
-
-func saveVoicemail(dir string, voicemail []byte) (string, error) {
-	filenameBase := time.Now().Format("20060102-150405")
-	filename, file, err := createFile(dir, filenameBase, ".mp3")
-	if err == nil {
-		file.Write(voicemail)
-		file.Close()
-	}
-
-	return filename, err
-}
-
-func createTable(db *sqlite.Conn) error {
-	return db.Exec(`CREATE TABLE IF NOT EXISTS voicemail (
-                        id INTEGER PRIMARY KEY,
-                        caller TEXT,
-                        called TEXT,
-                        date INTEGER,
-                        duration INTEGER,
-                        voicemail TEXT);`)
-}
-
-func insertCall(db *sqlite.Conn, call *Call) error {
-	ins, err := db.Prepare(`INSERT INTO voicemail (
-                                caller, called, date, duration, voicemail
-                            ) VALUES (?, ?, ?, ?, ?)`)
-	if err != nil {
-		return err
-	}
-
-	defer ins.Finalize()
-
-	_, err = ins.Insert(call.Caller,
-		call.Called,
-		call.Date,
-		call.Duration.Seconds(),
-		call.VoicemailPath)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func ProcessMessage(conn net.Conn, storageDir string) (*Call, error) {
+func ProcessMessage(conn net.Conn) (model.Voicemail, []byte, error) {
 	in := bufio.NewReader(conn)
 	msg, err := receiveMessage(*in, conn)
 	if err != nil {
-		return nil, err
+		return model.Voicemail{}, nil, err
 	}
 
-	call, err := extractCall(msg)
+	voicemail, err := extractCall(msg)
 	if err != nil {
-		return nil, err
+		return model.Voicemail{}, nil, err
 	}
-	logger.Print("Received new voicemail ", call)
+	logger.Print("Received new voicemail ", voicemail)
 
-	voicemail, err := extractVoicemail(msg)
+	voicemailAudio, err := extractVoicemailAudio(msg)
 	if err != nil {
-		return nil, err
+		return model.Voicemail{}, nil, err
 	}
 
-	voicemailPath, err := saveVoicemail(storageDir, voicemail)
-	if err != nil {
-		logger.Print("Unable to save voicemail as MP3: ", err)
-		return nil, err
-	}
-
-	call.VoicemailPath = path.Base(voicemailPath)
-	logger.Print("Voicemail saved to ", call.VoicemailPath)
-
-	return call, nil
+	return voicemail, voicemailAudio, nil
 }
 
-func SaveToDB(db *sqlite.Conn, call *Call) error {
-	defer db.Close()
-
-	if err := createTable(db); err != nil {
-		return err
-	}
-
-	if err := insertCall(db, call); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func Serve(l net.Listener, db *sqlite.Conn, mp3Dir string) {
+func Serve(l net.Listener, db model.Database) {
 	defer l.Close()
 
 	for {
@@ -311,14 +219,14 @@ func Serve(l net.Listener, db *sqlite.Conn, mp3Dir string) {
 		}
 
 		logger.Print("Incoming voicemail from ", conn.RemoteAddr(), "?")
-		call, err := ProcessMessage(conn, mp3Dir)
+		voicemail, voicemailAudio, err := ProcessMessage(conn)
 		if err != nil {
 			logger.Print("Unable to process voicemail: ", err)
 		} else {
-			if err := SaveToDB(db, call); err != nil {
+			if err := db.AddVoicemail(voicemail, voicemailAudio); err != nil {
 				logger.Print("Unable to save to database: ", err)
 			} else {
-				logger.Print("Save to database successfull.")
+				logger.Print("Save to database successful.")
 			}
 		}
 		conn.Close()

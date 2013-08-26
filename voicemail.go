@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"bitbucket.org/tobik/voicemail/mail"
+	"bitbucket.org/tobik/voicemail/model"
 	"bitbucket.org/tobik/voicemail/utils"
 	"bitbucket.org/tobik/voicemail/web"
 )
@@ -54,11 +55,8 @@ func main() {
 		logger.Panic(err)
 	}
 
-	db, err := utils.OpenDatabase(DatabaseFile)
-	if err != nil {
-		logger.Panic(err)
-	}
+	db := model.OpenDatabase(DatabaseFile, VoicemailDirectory)
 
-	go mail.Serve(smtpListener, db, VoicemailDirectory)
+	go mail.Serve(smtpListener, db)
 	web.Serve(httpListener, db, VoicemailDirectory, Limit)
 }

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	. "bitbucket.org/tobik/voicemail/utils"
+	. "bitbucket.org/tobik/voicemail/model"
 )
 
 func sendMail(t *testing.T, unixSocket, testData string) {
@@ -66,25 +66,25 @@ func TestReceive(t *testing.T) {
 		t.Error(err)
 	}
 
-	call, err := ProcessMessage(conn, tempDir)
+	voicemail, _, err := ProcessMessage(conn, tempDir)
 	if err != nil {
 		t.Error(err)
 	}
 
 	duration, _ := time.ParseDuration("3s")
-	referenceCall := &Call{
+	referenceVoicemail := &Voicemail{
 		Caller:        "5552341222",
 		Called:        "12312234",
 		Date:          time.Unix(1256211300-7200, 0),
 		Duration:      duration,
-		VoicemailPath: call.VoicemailPath,
+		VoicemailPath: voicemail.VoicemailPath,
 	}
 
-	_, err = os.Stat(call.VoicemailPath)
+	_, err = os.Stat(voicemail.VoicemailPath)
 	if err == os.ErrNotExist ||
-		!call.Date.Equal(referenceCall.Date) ||
-		call.Caller != referenceCall.Caller ||
-		call.Duration.String() != referenceCall.Duration.String() {
-		t.Errorf("Call garbled: expected: %v, actual: %v\n", referenceCall, call)
+		!voicemail.Date.Equal(referenceVoicemail.Date) ||
+		voicemail.Caller != referenceVoicemail.Caller ||
+		voicemail.Duration.String() != referenceVoicemail.Duration.String() {
+		t.Errorf("Voicemail garbled: expected: %v, actual: %v\n", referenceVoicemail, voicemail)
 	}
 }
