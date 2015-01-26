@@ -6,7 +6,8 @@
 package sqlite
 
 /*
-#cgo LDFLAGS: -lsqlite3
+#cgo LDFLAGS: -L/usr/local/lib -lsqlite3
+#cgo CFLAGS: -I/usr/local/include
 
 #include <sqlite3.h>
 #include <stdlib.h>
