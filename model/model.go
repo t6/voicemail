@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	sqlite "../external/gosqlite"
 	"../utils"
-	sqlite "github.com/gwenn/gosqlite"
 )
 
 var logger = utils.Logger("model")

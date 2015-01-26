@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sloonz/go-qprintable"
+	"../external/go-qprintable"
 
 	"../model"
 	. "../utils"
