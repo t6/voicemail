@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"syscall"
 
-	"bitbucket.org/tobik/voicemail/mail"
-	"bitbucket.org/tobik/voicemail/model"
-	"bitbucket.org/tobik/voicemail/utils"
-	"bitbucket.org/tobik/voicemail/web"
+	"./mail"
+	"./model"
+	"./utils"
+	"./web"
 )
 
 var logger *log.Logger = utils.Logger("voicemail")

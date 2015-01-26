@@ -18,8 +18,8 @@ import (
 
 	"github.com/sloonz/go-qprintable"
 
-	"bitbucket.org/tobik/voicemail/model"
-	. "bitbucket.org/tobik/voicemail/utils"
+	"../model"
+	. "../utils"
 )
 
 var logger *log.Logger = Logger("mail")

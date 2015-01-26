@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	. "bitbucket.org/tobik/voicemail/model"
+	. "../model"
 )
 
 func sendMail(t *testing.T, unixSocket, testData string) {
@@ -66,7 +66,7 @@ func TestReceive(t *testing.T) {
 		t.Error(err)
 	}
 
-	voicemail, _, err := ProcessMessage(conn, tempDir)
+	voicemail, _, err := ProcessMessage(conn)
 	if err != nil {
 		t.Error(err)
 	}

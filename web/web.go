@@ -10,10 +10,10 @@ import (
 	"path"
 	"time"
 
-	"bitbucket.org/tobik/voicemail/model"
-	. "bitbucket.org/tobik/voicemail/utils"
+	"../model"
+	. "../utils"
 
-	"bitbucket.org/tobik/voicemail/web/assets"
+	"../web/assets"
 )
 
 var rootTemplate *template.Template

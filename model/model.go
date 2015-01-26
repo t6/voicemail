@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"bitbucket.org/tobik/voicemail/utils"
+	"../utils"
 	sqlite "github.com/gwenn/gosqlite"
 )
 
