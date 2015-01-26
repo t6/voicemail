@@ -182,7 +182,13 @@ func extractVoicemailAudio(msg string) ([]byte, error) {
 		return nil, err
 	}
 
-	return lameOut.Bytes(), nil
+	bytes := lameOut.Bytes()
+
+	// Avoid zombie processes
+	lame.Wait()
+	mplayer.Wait()
+
+	return bytes, nil
 }
 
 func ProcessMessage(conn net.Conn) (model.Voicemail, []byte, error) {
