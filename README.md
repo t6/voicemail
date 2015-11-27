@@ -35,6 +35,10 @@ you need to use `-smtp-port=25`.  Output of `voicemail -h`:
 To build install Go (`pkg install go` on FreeBSD) and run `go build`
 in the project's root directory.
 
+`voicemail` requires that MPlayer and LAME are available at runtime to
+convert the voicemails to MP3s.  On FreeBSD you can install them with
+`pkg install mplayer lame`.
+
 ## License
 
 Copyright (c) 2012, Tobias Kortkamp
