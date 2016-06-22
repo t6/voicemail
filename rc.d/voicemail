@@ -8,11 +8,11 @@
 name="voicemail"
 rcvar=voicemail_enable
 
-command=/usr/local/bin/${name}
+command=/usr/local/bin/voicemail
 start_cmd=voicemail_start
 
 voicemail_start() {
-	${command} ${voicemail_flags} &
+	env PATH=/usr/local/bin ${command} ${voicemail_flags} &
 }
 
 load_rc_config ${name}
