@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# PROVIDE: voicemail
+# REQUIRE: NETWORKING DAEMON
+
+. /etc/rc.subr
+
+name="voicemail"
+rcvar=voicemail_enable
+
+command=/usr/local/bin/${name}
+start_cmd=voicemail_start
+
+voicemail_start() {
+	${command} ${voicemail_flags} &
+}
+
+load_rc_config ${name}
+run_rc_command "$1"
