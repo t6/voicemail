@@ -14,8 +14,6 @@ import (
 	"net/mail"
 	"os/exec"
 	"strings"
-	"time"
-
 	"../external/go-qprintable"
 
 	"../model"
@@ -115,30 +113,7 @@ func extractCall(msg string) (model.Voicemail, error) {
 	}
 
 	html := unquote(metadata)
-
-	split := strings.Split(html, "\"c3\"")
-
-	caller := strings.TrimSpace(strings.Split(split[1][1:], "<")[0])
-	called := strings.TrimSpace(strings.Split(split[2][1:], "<")[0])
-
-	duration, err := time.ParseDuration(
-		strings.Replace(strings.TrimSpace(split[5][1:6]), ":", "m", 1) + "s")
-	if err != nil {
-		return model.Voicemail{}, err
-	}
-
-	date, err := time.Parse("2.01.2006 15:04 -0700",
-		strings.TrimSpace(strings.Split(split[3][1:], "<")[0]+" "+split[4][1:6])+" +0200")
-	if err != nil {
-		return model.Voicemail{}, err
-	}
-
-	return model.Voicemail{
-		Caller:   caller,
-		Called:   called,
-		Date:     date,
-		Duration: duration,
-	}, nil
+	return ParseHtml(strings.NewReader(html))
 }
 
 func extractVoicemailAudio(msg string) ([]byte, error) {
@@ -195,17 +170,20 @@ func ProcessMessage(conn net.Conn) (model.Voicemail, []byte, error) {
 	in := bufio.NewReader(conn)
 	msg, err := receiveMessage(*in, conn)
 	if err != nil {
+		logger.Print("Message not received")
 		return model.Voicemail{}, nil, err
 	}
 
 	voicemail, err := extractCall(msg)
 	if err != nil {
+		logger.Print("Could not extract message")
 		return model.Voicemail{}, nil, err
 	}
 	logger.Print("Received new voicemail ", voicemail)
 
 	voicemailAudio, err := extractVoicemailAudio(msg)
 	if err != nil {
+		logger.Print("Could not extract audio")
 		return model.Voicemail{}, nil, err
 	}
 

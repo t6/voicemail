@@ -6,7 +6,7 @@ import (
 )
 
 func Logger(prefix string) *log.Logger {
-	logger, err := syslog.NewLogger(syslog.LOG_INFO, log.Lshortfile)
+	logger, err := syslog.NewLogger(syslog.LOG_NOTICE, log.Lshortfile)
 	if err != nil {
 		panic(err)
 	}
