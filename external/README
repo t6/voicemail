@@ -5,3 +5,7 @@ Commit: e2d1cacbb8fa8f3158a2d7e7f08d9a82b7036fee
 gosqlite
 URL: https://github.com/gwenn/gosqlite
 Commit: 4751f87d7ef44643e64402e99f3777c907ab4109
+
+net/html
+URL: https://github.com/golang/net/tree/master/html
+Commit: bc3663df0ac92f928d419e31e0d2af22e683a5a2
