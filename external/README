@@ -3,12 +3,12 @@ URL: https://github.com/sloonz/go-qprintable
 Commit: e2d1cacbb8fa8f3158a2d7e7f08d9a82b7036fee
 License: ISC
 
-gosqlite
-URL: https://github.com/gwenn/gosqlite
-Commit: 4751f87d7ef44643e64402e99f3777c907ab4109
-License: BSD3
-
 net/html
 URL: https://github.com/golang/net/tree/master/html
 Commit: bc3663df0ac92f928d419e31e0d2af22e683a5a2
+License: BSD3
+
+sqlite
+URL: https://github.com/rsc/sqlite
+Commit: c7a7bd4dbacb51305009da98e85a5f754358965a
 License: BSD3
