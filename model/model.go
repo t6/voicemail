@@ -1,13 +1,14 @@
 package model
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"path"
 	"strconv"
 	"time"
 
-	sqlite "../external/gosqlite"
+	_ "../external/sqlite"
 	"../utils"
 )
 
@@ -23,17 +24,14 @@ type Voicemail struct {
 }
 
 type Database struct {
-	channel    chan func(db *sqlite.Conn)
+	channel    chan func(db *sql.DB)
 	storageDir string
 }
 
 func OpenDatabase(dbFile string, storageDir string) Database {
-	ch := make(chan func(db *sqlite.Conn))
+	ch := make(chan func(db *sql.DB))
 	go func() {
-		db, err := sqlite.Open(dbFile,
-			sqlite.OpenReadWrite,
-			sqlite.OpenCreate,
-			sqlite.OpenFullMutex)
+		db, err := sql.Open("sqlite3", dbFile)
 
 		if err != nil {
 			logger.Panic(err)
@@ -44,7 +42,7 @@ func OpenDatabase(dbFile string, storageDir string) Database {
                      id INTEGER PRIMARY KEY,
                      caller TEXT,
                      called TEXT,
-                     date INTEGER,
+                     date TEXT,
                      duration INTEGER,
                      voicemail TEXT);`)
 
@@ -62,26 +60,29 @@ func (db Database) GetVoicemails(limit int) ([]Voicemail, error) {
 
 	voicemails := []Voicemail{}
 
-	db.channel <- func(db *sqlite.Conn) {
+	db.channel <- func(db *sql.DB) {
 		s, err := db.Prepare(query)
 		if err != nil {
 			errorChannel <- err
 			return
 		}
-		defer s.Finalize()
+		defer s.Close()
 
-		err = s.Select(func(s *sqlite.Stmt) (err error) {
+		rows, err := s.Query()
+		for rows.Next() {
 			var voicemail Voicemail
 			var duration string
-			if err = s.NamedScan(
-				"id", &voicemail.Id,
-				"caller", &voicemail.Caller,
-				"called", &voicemail.Called,
-				"date", &voicemail.Date,
-				"duration", &duration,
-				"voicemail", &voicemail.VoicemailPath); err != nil {
+			var date string
+			if err := rows.Scan(
+				&voicemail.Id,
+				&voicemail.Caller,
+				&voicemail.Called,
+				&date,
+				&duration,
+				&voicemail.VoicemailPath); err != nil {
 
-				return err
+				errorChannel <- err
+				return
 			}
 
 			if voicemail.Caller == "" {
@@ -91,12 +92,19 @@ func (db Database) GetVoicemails(limit int) ([]Voicemail, error) {
 				voicemail.Called = "Unbekannt"
 			}
 
-			voicemail.Duration, _ = time.ParseDuration(duration + "s")
+			voicemail.Duration, err = time.ParseDuration(duration + "s")
+			if err != nil {
+				errorChannel <- err
+				return
+			}
+			voicemail.Date, err = time.Parse("2006-01-02 15:04:05.000-07:00", date)
+			if err != nil {
+				errorChannel <- err
+				return
+			}
+
 			voicemails = append(voicemails, voicemail)
-
-			return err
-		})
-
+		}
 		errorChannel <- err
 	}
 
@@ -141,7 +149,7 @@ func saveVoicemailAudio(dir string, voicemail []byte) (string, error) {
 func (db Database) AddVoicemail(voicemail Voicemail, voicemailAudio []byte) error {
 	errorChannel := make(chan error)
 
-	db.channel <- func(conn *sqlite.Conn) {
+	db.channel <- func(conn *sql.DB) {
 		voicemailPath, err := saveVoicemailAudio(db.storageDir, voicemailAudio)
 		if err != nil {
 			logger.Print("Unable to save voicemail as MP3: ", err)
@@ -159,11 +167,12 @@ func (db Database) AddVoicemail(voicemail Voicemail, voicemailAudio []byte) erro
 			errorChannel <- err
 			return
 		}
-		defer ins.Finalize()
+		defer ins.Close()
 
-		_, err = ins.Insert(voicemail.Caller,
+		date := voicemail.Date.Format("2006-01-02 15:04:05.000-07:00")
+		_, err = ins.Exec(voicemail.Caller,
 			voicemail.Called,
-			voicemail.Date,
+			date,
 			voicemail.Duration.Seconds(),
 			voicemail.VoicemailPath)
 		if err != nil {
