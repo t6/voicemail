@@ -166,7 +166,7 @@ func extractVoicemailAudio(msg string) ([]byte, error) {
 	return bytes, nil
 }
 
-func ProcessMessage(conn net.Conn) (model.Voicemail, []byte, error) {
+func ProcessMessage(db model.Database, conn net.Conn) (model.Voicemail, []byte, error) {
 	in := bufio.NewReader(conn)
 	msg, err := receiveMessage(*in, conn)
 	if err != nil {
@@ -184,6 +184,7 @@ func ProcessMessage(conn net.Conn) (model.Voicemail, []byte, error) {
 	voicemailAudio, err := extractVoicemailAudio(msg)
 	if err != nil {
 		logger.Print("Could not extract audio")
+		db.DumpRawMessage(voicemail, []byte(msg))
 		return model.Voicemail{}, nil, err
 	}
 
@@ -201,7 +202,7 @@ func Serve(l net.Listener, db model.Database) {
 		}
 
 		logger.Print("Incoming voicemail from ", conn.RemoteAddr(), "?")
-		voicemail, voicemailAudio, err := ProcessMessage(conn)
+		voicemail, voicemailAudio, err := ProcessMessage(db, conn)
 		if err != nil {
 			logger.Print("Unable to process voicemail: ", err)
 		} else {

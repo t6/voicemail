@@ -146,6 +146,19 @@ func saveVoicemailAudio(dir string, voicemail []byte) (string, error) {
 	return filename, err
 }
 
+func (db Database) DumpRawMessage(
+	voicemail Voicemail, rawAudio []byte) (string, error) {
+	filenameBase := time.Now().Format("20060102-150405")
+	filename, file, err := createFile(db.storageDir, filenameBase, ".b64")
+	if err == nil {
+		logger.Printf("Unprocessed voicemail from %v dumped: %v", voicemail.Caller, filename)
+		file.Write(rawAudio)
+		file.Close()
+	}
+
+	return filename, err
+}
+
 func (db Database) AddVoicemail(voicemail Voicemail, voicemailAudio []byte) error {
 	errorChannel := make(chan error)
 
